@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- roslaunch arguments -->
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="true"/>
+  
+
+  <!-- terabot_control launch file -->
+  <include file="$(find terabot_control)/launch/terabot_control.launch"/>
+
+
+
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find terabot_gazebo)/worlds/terabot.world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="headless" value="false"/>
+  </include>
+
+  <!-- Load the URDF into the ROS Parameter Server -->
+  <arg name="urdf_file" default="$(find xacro)/xacro.py '$(find terabot_description)/urdf/terabot_standalone.urdf.xacro'" />
+  <param name="robot_description" command="$(arg urdf_file)" />
+  
+         
+  <!-- Call a python script to the run a service call to gazebo_ros to spawn a URDF robot -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+        args="-urdf -model terabot -param robot_description -z 1.0"/>
+
+</launch>
